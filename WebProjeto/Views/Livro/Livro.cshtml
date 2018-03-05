@@ -1,0 +1,250 @@
+﻿@model List<WebProjeto.DataProvider.Models.LivroModel>
+@{
+    ViewBag.Title = "Lista de Livros";
+}
+@*@section Scripts
+    {
+    <script type="text/javascript" src="@Url.Content("/Controllers/Teste.js")"></script>
+    }*@
+
+<style>
+    #cabecalho_grid > thera > tr th:nth-child(2) {
+        width: 110px;
+    }
+
+    #cabecalho_grid > thera > tr th:nth-child(3) {
+        width: 200px;
+    }
+
+    #cadastro {
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    #cadastro_cabecalho {
+        border-bottom: 1px #dddddd solid;
+    }
+
+    #cadastro_conteudo {
+        margin-top: 20px;
+    }
+
+    #cabecalho_grid {
+        margin-bottom: 20px;
+    }
+</style>
+<div id="cadastro">
+    <section id="cadastro_cabecalho">
+        <h1>@ViewBag.Title</h1>
+    </section>
+    <section id="cadastro_conteudo">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card-box">
+                    <div id="cabecalho_grid" class="row">
+                        <div class="col-md-12">
+                            <a id="btn_incluir" class="btn btn-success" role="button">
+                                <i class="glyphicon glyphicon-plus"> Incluir</i>
+                            </a>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <table id="grid_cadastro" class="table table-bordered table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Nome</th>
+                                        <th>Autor</th>
+                                        <th>Editora</th>
+                                        <th style="width:20%; text-align:center">Ação</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var livro in Model)
+                                    {
+                                    <tr data-id="@livro.Id">
+                                        <td>@livro.Nome</td>
+                                        <td>@livro.Autor</td>
+                                        <td>@livro.Editora</td>
+                                        <td style="text-align:center">
+                                            <a class="btn btn-primary btn-alterar" role="button">
+                                                <i class="glyphicon glyphicon-pencil"></i>
+                                            </a>
+                                            <a class="btn btn-danger btn-excluir" role="button">
+                                                <i class="glyphicon glyphicon-trash"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+@Html.Hidden("id_cadastro")
+<div id="modal_cadastro" class="form-horizontal invisivel" role="dialog">
+    <fieldset>
+        <div class="row">
+            <div class="form-group">
+                @Html.Label("txt_nome", "Nome*", new { @class = "col-md-3 control-label" })
+                <div class="col-md-12">
+                    @Html.TextBox("txt_nome", null, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("txt_autor", "Autor*", new { @class = "col-md-3 control-label" })
+                <div class="col-md-12">
+                    @Html.TextBox("txt_autor", null, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.Label("txt_editora", "Editora*", new { @class = "col-md-3 control-label" })
+                <div class="col-md-12">
+                    @Html.TextBox("txt_editora", null, new { @class = "form-control" })
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    <div class="modal-footer">
+                        <a id="btn_sair" class="btn btn-default" role="button" data-dismiss="modal"><i class="glyphicon glyphicon-remove"></i>Sair</a>
+                        <a id="btn_confirmar" class="btn btn-success" role="button" data-dismiss="modal"><i class="glyphicon glyphicon-ok"></i>Salvar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </fieldset>
+</div>
+@section Scripts{
+    <script>
+
+    function abrir_form(dados) {
+        $('#id_cadastro').val(dados.Id);
+        $('#txt_nome').val(dados.Nome);
+        $('#txt_autor').val(dados.Autor);
+        $('#txt_editora').val(dados.Editora);
+        var modal_cadastro = $('#modal_cadastro');
+
+        bootbox.dialog({
+            title: 'Cadastro de Livro',
+            message: modal_cadastro
+        }).on('shown.bs.modal', function () {
+            modal_cadastro.show(0, function () {
+                $('#txt_codigo').focus();
+            });
+        }).on('hidden.bs.modal', function () {
+            modal_cadastro.hide().appendTo('body');
+        });
+    }
+
+    function adciona_linha_tabela(dados) {
+
+        var retorno =
+            '<tr data-id=' + dados.Id + '>' +
+            '<td>' + dados.Nome + '</td>' +
+            '<td>' + dados.Autor + '</td>' +
+            '<td>' + dados.Editora + '</td>' +
+            '<td style="text-align:center">' +
+            '<a class="btn btn-primary btn-alterar" role="button"><i class="glyphicon glyphicon-pencil"></i></a>' +
+            '<a class="btn btn-danger btn-excluir" role="button"><i class="glyphicon glyphicon-trash"></i></a>' +
+            '</td>' +
+            '</tr>';
+
+        return retorno;
+    }
+
+    $(function () {
+        $("#btn_incluir").click(function () {
+            abrir_form({
+                Id: 0,
+                Nome: '',
+                Autor: '',
+                Editora:''
+            });
+        });
+    });
+
+
+
+    $(function () {
+        $(".btn-alterar").click(function () {
+            var btn = $(this),
+                id = btn.closest('tr').attr('data-id'),
+                url = '@Url.Action("RecuperaLivro", "Livro")';
+            param = { 'id': id };
+
+            $.post(url, param, function (resp) {
+                if (resp) {
+                    abrir_form(resp)
+                }
+            });
+        });
+    });
+
+    $(function () {
+        $(".btn-excluir").click(function () {
+            var btn = $(this),
+                tr = btn.closest('tr'),
+                id = tr.attr('data-id'),
+                url = '@Url.Action("RemoverLivro", "Livro")',
+                param = { 'id': id };
+
+            bootbox.confirm({
+                message: "Deseja excluir este registro?",
+                buttons: {
+                    confirm: {
+                        label: 'Sim',
+                        className: 'btn-success'
+                    },
+                    cancel: {
+                        label: 'Não',
+                        className: 'btn-danger'
+                    }
+                },
+                callback: function (result) {
+                    if (result) {
+                        $.post(url, param, function (resp) {
+                            if (resp == 'OK') {
+                                tr.remove();
+                                toastr.success('Registro excluído com sucesso!');
+                            }
+                        });
+                    }
+                }
+            });
+        });
+    });
+
+    $(function () {
+        $("#btn_confirmar").click(function () {
+            var btn = $(this),
+                url = '@Url.Action("PersisteLivro", "Livro")';
+            param = {
+                Id: $('#id_cadastro').val(),
+                Nome: $('#txt_nome').val(),
+                Autor: $('#txt_autor').val(),
+                Editora: $('#txt_editora').val()
+            };
+
+            $.post(url, param, function (resp) {
+                if (resp.Resultado == 'OK') {
+                    window.location.reload();
+                    toastr.success('Registro salvo com sucesso!');
+
+                } else if (resp.Resultado == "ERRO") {
+                    toastr.error("Ocorreu erro ao salvar registro. Registro já existente!");
+                } else if (resp.Resultado == "AVISO") {
+                    toastr.warning("Verifique os campos obrigatórios!");
+                }
+            });
+        });
+    });
+
+    </script>
+}
